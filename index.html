@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>MathEasy2 Code | ถอดรหัสใจ ปลดล็อกคณิต</title>
+  <style>
+    :root{
+      --green-dark:#0F5F3A;
+      --green:#16A34A;
+      --green-soft:#DDFBEA;
+      --cream:#FFF7ED;
+      --pink:#F9A8D4;
+      --pink-strong:#EC4899;
+      --gold:#FBBF24;
+      --text:#111827;
+      --muted:#6B7280;
+      --line:#E5E7EB;
+      --danger:#FCA5A5;
+      --white:#FFFFFF;
+      --shadow: 0 24px 70px rgba(15,95,58,.25);
+      --radius: 26px;
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,"Noto Sans Thai",sans-serif;color:var(--text);}
+    body{
+      min-height:100svh;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 14% 12%, rgba(249,168,212,.42) 0 15%, transparent 35%),
+        radial-gradient(circle at 85% 6%, rgba(251,191,36,.26) 0 14%, transparent 33%),
+        linear-gradient(145deg, #073B27 0%, #0F5F3A 43%, #FFF7ED 100%);
+    }
+
+    .desktop-shell{height:100%;display:grid;place-items:center;padding:14px;position:relative;isolation:isolate;}
+    .bg-symbols{position:fixed;inset:0;overflow:hidden;z-index:-1;pointer-events:none;}
+    .sym{position:absolute;color:rgba(255,255,255,.26);font-weight:900;animation:floaty linear infinite;filter:blur(.1px)}
+    .sym:nth-child(1){left:8%;top:10%;font-size:44px;animation-duration:12s}
+    .sym:nth-child(2){left:80%;top:18%;font-size:34px;animation-duration:15s;animation-delay:-3s}
+    .sym:nth-child(3){left:13%;top:75%;font-size:36px;animation-duration:13s;animation-delay:-5s}
+    .sym:nth-child(4){left:78%;top:76%;font-size:48px;animation-duration:17s;animation-delay:-8s}
+    .sym:nth-child(5){left:47%;top:7%;font-size:30px;animation-duration:16s;animation-delay:-2s}
+    .sym:nth-child(6){left:49%;top:84%;font-size:42px;animation-duration:14s;animation-delay:-7s}
+    @keyframes floaty{0%{transform:translateY(0) rotate(0deg);opacity:.16}50%{transform:translateY(-28px) rotate(12deg);opacity:.34}100%{transform:translateY(0) rotate(0deg);opacity:.16}}
+
+    .phone{
+      width:min(430px,100vw);
+      height:min(900px,100svh);
+      max-height:100svh;
+      background:rgba(255,255,255,.74);
+      border:1px solid rgba(255,255,255,.52);
+      border-radius:34px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+      backdrop-filter: blur(18px);
+    }
+    @media (max-width:520px){
+      .desktop-shell{padding:0;display:block}
+      .phone{width:100vw;height:100svh;max-height:100svh;border-radius:0;border:0;box-shadow:none;}
+    }
+
+    .app{height:100%;display:flex;flex-direction:column;position:relative;}
+    header{
+      padding:18px 18px 12px;
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.72));
+      border-bottom:1px solid rgba(229,231,235,.7);
+      position:relative;
+      z-index:3;
+    }
+    .toprow{display:flex;align-items:center;gap:12px;}
+    .logo-wrap{width:47px;height:47px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;font-weight:900;box-shadow:0 10px 22px rgba(15,95,58,.28);border:2px solid rgba(255,255,255,.8);overflow:hidden;flex:0 0 auto;}
+    .logo-wrap img{width:100%;height:100%;object-fit:cover;display:none;}
+    .school-text{min-width:0;}
+    .school-text b{display:block;font-size:15px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .school-text span{display:block;font-size:12px;color:var(--muted);margin-top:2px;}
+    .progress-area{margin-top:13px;display:flex;align-items:center;gap:10px;}
+    .progress-track{height:9px;border-radius:99px;background:#E8F3ED;flex:1;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+    .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--green),var(--pink-strong),var(--gold));border-radius:99px;transition:width .42s ease;}
+    .progress-label{font-size:12px;font-weight:800;color:var(--green-dark);min-width:46px;text-align:right;}
+
+    main{flex:1;overflow:hidden;position:relative;}
+    .screen{position:absolute;inset:0;padding:18px 18px 96px;overflow-y:auto;opacity:0;transform:translateX(18px);transition:opacity .28s ease, transform .28s ease;pointer-events:none;scrollbar-width:none;}
+    .screen::-webkit-scrollbar{display:none}
+    .screen.active{opacity:1;transform:translateX(0);pointer-events:auto;}
+    .screen.back{transform:translateX(-18px)}
+
+    .hero{min-height:100%;display:flex;flex-direction:column;justify-content:center;gap:16px;padding-bottom:36px;text-align:center;}
+    .hero-card,.card{background:rgba(255,255,255,.86);border:1px solid rgba(255,255,255,.72);box-shadow:0 18px 48px rgba(17,24,39,.12);border-radius:var(--radius);padding:20px;position:relative;overflow:hidden;}
+    .hero-card:before,.card:before{content:"";position:absolute;inset:-2px;background:radial-gradient(circle at 12% 0%,rgba(249,168,212,.26),transparent 32%),radial-gradient(circle at 100% 10%,rgba(251,191,36,.20),transparent 30%);pointer-events:none;}
+    .hero-card>* , .card>*{position:relative;z-index:1;}
+    .app-title{font-size:38px;line-height:1.04;margin:8px 0 6px;font-weight:1000;letter-spacing:-.8px;color:var(--green-dark);}
+    .app-subtitle{font-size:22px;font-weight:900;color:#263238;margin:0 0 8px;}
+    .desc{font-size:15.5px;line-height:1.65;color:#374151;margin:0;}
+    .quote{border-radius:22px;background:linear-gradient(135deg,#ECFDF5,#FFF7ED);padding:14px 16px;font-weight:800;color:var(--green-dark);line-height:1.55;border:1px dashed rgba(15,95,58,.24)}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:linear-gradient(135deg,rgba(22,163,74,.12),rgba(249,168,212,.18));color:var(--green-dark);font-weight:900;font-size:12px;border:1px solid rgba(15,95,58,.12);}
+    .badge.gold{background:linear-gradient(135deg,rgba(251,191,36,.24),rgba(249,168,212,.22));}
+
+    h1,h2,h3,p{margin-top:0}
+    .mission-kicker{font-size:13px;font-weight:1000;color:var(--pink-strong);text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px;}
+    .screen-title{font-size:27px;line-height:1.16;margin:0 0 9px;color:var(--green-dark);font-weight:1000;letter-spacing:-.2px;}
+    .help-text{font-size:15px;line-height:1.55;color:#4B5563;margin-bottom:14px;}
+    .tiny{font-size:12px;color:var(--muted);line-height:1.45;}
+
+    .form-grid{display:grid;gap:12px;margin-top:16px;}
+    label{font-size:13px;font-weight:900;color:#374151;display:block;margin:0 0 6px;}
+    input,select,textarea{width:100%;min-height:52px;border-radius:17px;border:1.5px solid #D1D5DB;background:#fff;padding:13px 14px;font:inherit;font-size:16px;outline:none;transition:.18s ease;box-shadow:0 6px 16px rgba(17,24,39,.04);}
+    textarea{min-height:122px;resize:none;line-height:1.55;}
+    input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 4px rgba(22,163,74,.14)}
+    .invalid{border-color:#EF4444!important;background:#FFF1F2!important;animation:shake .28s ease;}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+    .question-card{display:none;}
+    .question-card.active{display:block;animation:fadeIn .22s ease;}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .q-count{display:inline-flex;margin:2px 0 10px;padding:6px 10px;border-radius:999px;background:#ECFDF5;color:var(--green-dark);font-weight:900;font-size:12px;}
+    .question{font-size:20px;line-height:1.35;font-weight:1000;color:#111827;margin-bottom:14px;}
+    .options{display:grid;gap:10px;}
+    .option,.choice-pill,.goal-chip{border:1.5px solid #E5E7EB;background:rgba(255,255,255,.92);border-radius:20px;padding:13px 14px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:.18s ease;box-shadow:0 8px 18px rgba(17,24,39,.04);user-select:none;}
+    .option:hover,.choice-pill:hover,.goal-chip:hover{transform:translateY(-1px);box-shadow:0 13px 24px rgba(17,24,39,.08)}
+    .option.selected,.choice-pill.selected{border-color:var(--green);background:linear-gradient(135deg,#ECFDF5,#FFFFFF);box-shadow:0 0 0 4px rgba(22,163,74,.11),0 16px 32px rgba(15,95,58,.12);}
+    .option.power.selected{border-color:var(--gold);background:linear-gradient(135deg,#FFFBEB,#FFFFFF);box-shadow:0 0 0 4px rgba(251,191,36,.16),0 16px 32px rgba(251,191,36,.13);}
+    .option.islam.selected{border-color:#D97706;background:linear-gradient(135deg,#FFFBEB,#F0FDF4);box-shadow:0 0 0 4px rgba(251,191,36,.16),0 16px 32px rgba(15,95,58,.12);}
+    .letter{width:29px;height:29px;border-radius:11px;display:grid;place-items:center;font-weight:1000;background:#F3F4F6;color:#374151;flex:0 0 auto;}
+    .option.selected .letter,.choice-pill.selected .letter{background:var(--green);color:#fff;}
+    .option.power.selected .letter{background:var(--gold);color:#111827;}
+    .option.islam.selected .letter{background:#D97706;color:#fff;}
+    .option-text b{display:block;font-size:15.5px;line-height:1.35;margin-bottom:2px;}
+    .option-text span{display:block;color:#4B5563;font-size:13px;line-height:1.45;}
+    .check{margin-left:auto;color:var(--green);font-weight:1000;opacity:0;transform:scale(.6);transition:.18s ease;}
+    .selected .check{opacity:1;transform:scale(1)}
+
+    .grid-choices{display:grid;gap:10px;}
+    .unlock-preview{margin-top:14px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:20px;padding:14px;display:none;}
+    .unlock-preview.show{display:block;animation:fadeIn .2s ease;}
+    .unlock-preview b{display:block;color:var(--green-dark);margin-bottom:8px;}
+    .unlock-preview ul{margin:0;padding-left:20px;color:#374151;line-height:1.55;font-size:14px;}
+    .selected-count{font-size:13px;color:var(--muted);font-weight:800;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;}
+
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 13px;}
+    .goal-chip{padding:9px 11px;border-radius:999px;font-size:13px;font-weight:800;color:var(--green-dark);background:#F0FDF4;}
+
+    .nav{position:absolute;left:0;right:0;bottom:0;padding:12px 18px 18px;background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.93) 28%,rgba(255,255,255,.98));display:flex;gap:10px;z-index:5;}
+    button{border:0;font:inherit;cursor:pointer;user-select:none;}
+    .btn{height:52px;border-radius:18px;padding:0 16px;font-weight:1000;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.18s ease;box-shadow:0 10px 24px rgba(17,24,39,.09);}
+    .btn:active{transform:scale(.98)}
+    .btn-primary{flex:1;color:#fff;background:linear-gradient(135deg,var(--green),var(--pink-strong));box-shadow:0 14px 30px rgba(22,163,74,.22),0 0 0 1px rgba(255,255,255,.2) inset;}
+    .btn-primary.pulse{animation:pulse 1.6s infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 14px 30px rgba(22,163,74,.22)}50%{box-shadow:0 18px 40px rgba(236,72,153,.28),0 0 0 7px rgba(249,168,212,.15)}}
+    .btn-secondary{min-width:102px;background:#fff;color:#374151;border:1px solid #E5E7EB;}
+    .btn-ghost{background:rgba(255,255,255,.28);color:#fff;border:1px solid rgba(255,255,255,.22);box-shadow:none;}
+
+    .toast{position:absolute;left:18px;right:18px;bottom:84px;background:#111827;color:#fff;padding:12px 14px;border-radius:18px;font-size:14px;font-weight:800;box-shadow:0 18px 44px rgba(17,24,39,.24);transform:translateY(20px);opacity:0;pointer-events:none;transition:.22s ease;z-index:20;line-height:1.45;}
+    .toast.show{transform:translateY(0);opacity:1;}
+
+    .loading{position:absolute;inset:0;display:none;place-items:center;background:rgba(7,59,39,.72);z-index:30;backdrop-filter:blur(8px);color:#fff;text-align:center;padding:28px;}
+    .loading.show{display:grid;}
+    .loader{width:72px;height:72px;border-radius:50%;border:7px solid rgba(255,255,255,.24);border-top-color:var(--gold);animation:spin .9s linear infinite;margin:0 auto 18px;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading h3{font-size:22px;margin-bottom:8px}.loading p{font-size:15px;color:rgba(255,255,255,.86)}
+
+    .modal{position:absolute;inset:0;z-index:40;background:rgba(7,24,18,.74);display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(10px);}
+    .modal.show{display:flex;animation:fadeIn .22s ease;}
+    .result-wrap{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+    .result-card{
+      width:min(100%,360px);
+      max-height:calc(100svh - 120px);
+      aspect-ratio:9/16;
+      overflow:auto;
+      border-radius:30px;
+      color:#fff;
+      background:
+        radial-gradient(circle at 15% 8%,rgba(249,168,212,.44),transparent 24%),
+        radial-gradient(circle at 85% 6%,rgba(251,191,36,.36),transparent 27%),
+        linear-gradient(145deg,#062018 0%,#0F5F3A 50%,#071812 100%);
+      border:1px solid rgba(255,255,255,.18);
+      box-shadow:0 34px 80px rgba(0,0,0,.42),0 0 46px rgba(249,168,212,.17);
+      padding:19px;
+      position:relative;
+      scrollbar-width:none;
+      animation:zoomGlow .34s ease;
+    }
+    .result-card::-webkit-scrollbar{display:none}
+    @keyframes zoomGlow{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+    .result-card:before{content:"∑  π  √  x²";position:absolute;right:-12px;top:80px;writing-mode:vertical-rl;font-size:20px;font-weight:1000;letter-spacing:16px;color:rgba(255,255,255,.08);}
+    .r-head{text-align:center;position:relative;z-index:1;margin-bottom:9px;}
+    .r-logo{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:#fff;color:var(--green-dark);font-weight:1000;margin:0 auto 8px;box-shadow:0 12px 24px rgba(0,0,0,.2);overflow:hidden;}
+    .r-logo img{width:100%;height:100%;object-fit:cover;display:none;}
+    .unlock{display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--gold),#FDE68A);color:#111827;font-size:11px;font-weight:1000;padding:6px 10px;border-radius:999px;margin-bottom:7px;}
+    .r-title{font-size:23px;font-weight:1000;line-height:1.1;margin-bottom:2px;}
+    .r-sub{font-size:13px;color:rgba(255,255,255,.84);font-weight:800;}
+    .r-box{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.16);border-radius:20px;padding:11px 12px;margin-top:9px;position:relative;z-index:1;}
+    .r-box h4{margin:0 0 7px;font-size:13px;color:#FDE68A;letter-spacing:.1px;}
+    .r-box p,.r-box li{font-size:12.2px;line-height:1.45;color:rgba(255,255,255,.9);margin:0;}
+    .r-box ul{margin:0;padding-left:18px;}
+    .student-line{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;font-size:12px;line-height:1.35;color:rgba(255,255,255,.92)}
+    .code-big{font-size:22px;font-weight:1000;color:#fff;margin-bottom:3px;}
+    .r-footer{text-align:center;font-size:11px;color:rgba(255,255,255,.76);margin-top:11px;line-height:1.4;position:relative;z-index:1;}
+    .result-actions{width:min(100%,380px);display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+    .result-actions .btn{height:46px;border-radius:16px;font-size:13px;}
+    .result-actions .wide{grid-column:1/-1;}
+
+    .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:45;}
+    .confetti i{position:absolute;width:8px;height:12px;background:var(--gold);top:-16px;animation:fall 1.8s ease-in forwards;}
+    @keyframes fall{to{transform:translateY(100svh) rotate(440deg);opacity:.2}}
+
+    .mini-note{margin-top:12px;padding:12px 13px;border-radius:18px;background:#FFF7ED;border:1px solid #FED7AA;color:#7C2D12;font-size:13px;line-height:1.48;font-weight:800;}
+    .footer-space{height:18px;}
+
+    @media (max-width:360px){
+      .screen{padding-left:14px;padding-right:14px}.nav{padding-left:14px;padding-right:14px}.app-title{font-size:34px}.screen-title{font-size:25px}.question{font-size:18px}.result-card{max-height:calc(100svh - 116px);padding:16px}.r-box p,.r-box li{font-size:11.6px}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-symbols" aria-hidden="true">
+    <span class="sym">∑</span><span class="sym">π</span><span class="sym">√</span><span class="sym">x²</span><span class="sym">%</span><span class="sym">∞</span>
+  </div>
+
+  <div class="desktop-shell">
+    <div class="phone" role="application" aria-label="MathEasy2 Code Web App">
+      <div class="app">
+        <header>
+          <div class="toprow">
+            <div class="logo-wrap"><img id="schoolLogo" alt="โลโก้โรงเรียน"><span>AFS</span></div>
+            <div class="school-text">
+              <b>โรงเรียนมูลนิธิอาซิซสถาน</b>
+              <span>MathEasy2 Code · ค33101</span>
+            </div>
+          </div>
+          <div class="progress-area">
+            <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="progress-label" id="progressLabel">1/8</div>
+          </div>
+        </header>
+
+        <main id="screens">
+          <section class="screen active" data-step="0">
+            <div class="hero">
+              <div class="hero-card">
+                <span class="badge gold">🚀 Mission Start</span>
+                <h1 class="app-title">MathEasy2 Code</h1>
+                <h2 class="app-subtitle">ถอดรหัสใจ ปลดล็อกคณิต</h2>
+                <p class="desc">กิจกรรมค้นหาตัวเองก่อนเริ่มเรียนคณิตศาสตร์พื้นฐาน ค33101<br>ชั้น ม.6 สายศิลป์ภาษา เพื่อเตรียมพร้อมสู่ A-Level คณิตศาสตร์ 2</p>
+                <div class="quote" style="margin-top:16px;">“ไม่ต้องเก่งตั้งแต่แรก<br>แค่กล้าเริ่ม และไม่ยอมแพ้เร็วเกินไป”</div>
+              </div>
+              <p class="tiny">ใช้เวลาประมาณ 5–8 นาที · ตอบตามความจริง ไม่มีคำตอบผิด</p>
+            </div>
+          </section>
+
+          <section class="screen" data-step="1">
+            <div class="card">
+              <div class="mission-kicker">Student Info</div>
+              <h2 class="screen-title">ข้อมูลนักเรียน</h2>
+              <p class="help-text">กรอกข้อมูลให้ครบก่อนเริ่มกิจกรรม ข้อมูลนี้ใช้สำหรับแสดงบนการ์ดสรุปผลของคุณ</p>
+              <div class="form-grid">
+                <div><label for="studentId">รหัสนักเรียน</label><input id="studentId" inputmode="numeric" placeholder="กรอกรหัสนักเรียน"></div>
+                <div><label for="fullName">ชื่อ-สกุล</label><input id="fullName" placeholder="กรอกชื่อและนามสกุล"></div>
+                <div><label for="className">ชั้น</label><select id="className"><option value="">เลือกชั้น</option><option>ม.6/1</option><option>ม.6/2</option><option>ม.6/3</option><option>ม.6/4</option><option>ม.6/5</option><option>ม.6/6</option></select></div>
+                <div><label for="studentNumber">เลขที่</label><input id="studentNumber" inputmode="numeric" placeholder="กรอกเลขที่"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="2">
+            <div class="card">
+              <div class="mission-kicker">Mission 1</div>
+              <h2 class="screen-title">ถอดรหัสผู้เรียนของฉัน</h2>
+              <p class="help-text">ตอบคำถาม 4 ข้อ เลือกคำตอบที่ตรงกับตัวเองมากที่สุด ไม่มีคำตอบผิด</p>
+              <div id="mission1"></div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="3">
+            <div class="card">
+              <div class="mission-kicker">Mission 2</div>
+              <h2 class="screen-title">กำแพงของฉัน</h2>
+              <p class="help-text">เลือก 2 ข้อที่เป็นอุปสรรคของตัวเองมากที่สุดในการเรียนคณิตศาสตร์</p>
+              <div class="selected-count"><span>เลือกได้ 2 ข้อเท่านั้น</span><span id="wallCount">0/2</span></div>
+              <div class="grid-choices" id="walls"></div>
+              <div class="unlock-preview" id="unlockPreview"><b>แผนปลดล็อก</b><ul id="unlockList"></ul></div>
+              <div class="mini-note">“กำแพงไม่ได้มีไว้หยุดเรา แต่มีไว้ให้เราหาวิธีข้าม”</div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="4">
+            <div class="card">
+              <div class="mission-kicker">Mission 3</div>
+              <h2 class="screen-title">พลังลับของฉัน</h2>
+              <p class="help-text">เลือกจุดแข็งของตัวเอง 1–2 ข้อ จุดแข็งเล็ก ๆ ก็มีคุณค่า</p>
+              <div class="selected-count"><span>เลือกอย่างน้อย 1 ข้อ สูงสุด 2 ข้อ</span><span id="powerCount">0/2</span></div>
+              <div class="grid-choices" id="powers"></div>
+              <div class="mini-note">“ทุกคนมีพลังบางอย่างอยู่แล้ว แค่ต้องรู้จักใช้มัน”</div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="5">
+            <div class="card">
+              <div class="mission-kicker">Mission 4</div>
+              <h2 class="screen-title">หลักอิสลามนำทาง</h2>
+              <p class="help-text">การเรียนก็เป็นอิบาดะฮ์ได้ ถ้าเราตั้งเจตนาให้ถูกต้อง เลือก 1 หลักที่อยากใช้เป็นหลักประจำใจ</p>
+              <div class="grid-choices" id="islamic"></div>
+              <div class="mini-note">“พยายามให้เต็มที่ แล้วมอบหมายผลลัพธ์ต่ออัลลอฮ์”</div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="6">
+            <div class="card">
+              <div class="mission-kicker">Mission 5</div>
+              <h2 class="screen-title">เป้าหมายเล็ก ๆ ของฉัน</h2>
+              <p class="help-text">เขียนเป้าหมายเล็ก ๆ ที่จะทำจริงในสัปดาห์แรกของการเรียน MathEasy2</p>
+              <div class="chips" id="goalChips"></div>
+              <label for="weeklyGoal">เป้าหมายของฉันคือ...</label>
+              <textarea id="weeklyGoal" placeholder="เช่น ฉันจะทบทวนหลังเรียน 10 นาที"></textarea>
+              <div class="mini-note">“เป้าหมายเล็ก ๆ ที่ทำจริง ดีกว่าเป้าหมายใหญ่ที่ไม่เริ่ม”</div>
+            </div>
+          </section>
+
+          <section class="screen" data-step="7">
+            <div class="card">
+              <span class="badge gold">✅ Mission Complete</span>
+              <h2 class="screen-title" style="margin-top:12px;">พร้อมถอดรหัสแล้ว</h2>
+              <p class="help-text">ระบบจะรวมคำตอบทั้งหมด แล้วสร้างการ์ด MathEasy2 Code ให้คุณแคปหน้าจอหรือบันทึกเป็นรูปภาพ</p>
+              <div class="quote">“เริ่มได้ ฝึกได้ พลาดได้ แต่ห้ามยอมแพ้”</div>
+              <div class="footer-space"></div>
+            </div>
+          </section>
+        </main>
+
+        <div class="nav">
+          <button class="btn btn-secondary" id="backBtn">ย้อนกลับ</button>
+          <button class="btn btn-primary pulse" id="nextBtn">เริ่มถอดรหัส</button>
+        </div>
+
+        <div class="toast" id="toast"></div>
+        <div class="loading" id="loading"><div><div class="loader"></div><h3>กำลังถอดรหัสของคุณ...</h3><p id="loadingText">กำลังรวม EXP ความพยายาม...</p></div></div>
+
+        <div class="modal" id="resultModal" aria-modal="true" role="dialog">
+          <div class="confetti" id="confetti"></div>
+          <div class="result-wrap">
+            <div class="result-card" id="resultCard"></div>
+            <div class="result-actions">
+              <button class="btn btn-secondary" id="editBtn">กลับไปแก้ไข</button>
+              <button class="btn btn-secondary" id="closeBtn">ปิด</button>
+              <button class="btn btn-primary wide" id="saveBtn">บันทึกการ์ดเป็น PNG</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // หากต้องการใช้โลโก้จริง ให้วาง URL หรือ Base64 ของโลโก้ที่นี่ เช่น const LOGO_URL = 'logo.png';
+    const LOGO_URL = '';
+
+    const state = {
+      studentId:'', fullName:'', className:'', studentNumber:'',
+      mission1Answers:[], learnerCode:'', learnerCodeName:'', learnerDescription:'',
+      selectedWalls:[], unlockPlans:[], selectedPowers:[],
+      selectedIslamicValue:null, weeklyGoal:'', createdAt:null
+    };
+
+    const questions = [
+      {q:'เมื่อเห็นโจทย์คณิตศาสตร์ยาว ๆ ฉันมักจะรู้สึกว่า', opts:{A:'กลัวและอยากข้าม',B:'งง แต่ลองอ่านก่อน',C:'อยากรู้ว่ามันเริ่มจากตรงไหน',D:'อยากถามเพื่อนหรือครู'}},
+      {q:'เวลาทำโจทย์ผิด ฉันมักจะ', opts:{A:'รู้สึกว่าตัวเองไม่เก่ง',B:'ลองดูเฉลยแล้วทำใหม่',C:'หาจุดที่ตัวเองพลาด',D:'ถามคนอื่นว่าเราผิดตรงไหน'}},
+      {q:'ถ้าจะให้ฉันเรียนคณิตดีขึ้น ฉันต้องการ', opts:{A:'กำลังใจ',B:'แบบฝึกเยอะขึ้น',C:'ขั้นตอนที่ชัดเจน',D:'คนช่วยอธิบาย'}},
+      {q:'สิ่งที่ฉันกลัวที่สุดในวิชาคณิตศาสตร์คือ', opts:{A:'กลัวตอบผิด',B:'กลัวทำไม่ทัน',C:'กลัวไม่เข้าใจตั้งแต่ต้น',D:'กลัวถามแล้วเพื่อนหัวเราะ'}}
+    ];
+
+    const learnerMap = {
+      A:{code:'M', name:'Mindset Learner', desc:'คุณเป็นผู้เรียนที่ต้องเริ่มจากการปรับใจ สร้างความมั่นใจ และค่อย ๆ ลดความกลัวต่อคณิตศาสตร์ คุณไม่ได้แพ้คณิตศาสตร์ แค่ต้องเริ่มจากการเปิดใจและฝึกทีละขั้น'},
+      B:{code:'A', name:'Active Learner', desc:'คุณเป็นผู้เรียนที่พัฒนาได้ดีจากการลงมือทำ ยิ่งได้ฝึก ได้ลอง ได้แก้โจทย์ คุณจะยิ่งเห็นพัฒนาการของตัวเองชัดเจน'},
+      C:{code:'T', name:'Tactical Learner', desc:'คุณเป็นผู้เรียนที่ต้องการระบบ ขั้นตอน และตัวอย่างที่ชัดเจน เมื่อรู้ว่าโจทย์ควรเริ่มจากตรงไหน คุณจะไปต่อได้ดีมาก'},
+      D:{code:'H', name:'Help-Seeking Learner', desc:'คุณเป็นผู้เรียนที่เติบโตได้ดีเมื่อกล้าถามและมีทีมสนับสนุน การถามไม่ใช่จุดอ่อน แต่คือวิธีเรียนรู้ที่ฉลาด'}
+    };
+
+    const walls = [
+      {id:'G1', title:'กลัวผิด', plan:'จำไว้ว่าความผิดพลาดคือ EXP ไม่ใช่จุดจบ'},
+      {id:'G2', title:'พื้นฐานไม่แน่น', plan:'เริ่มจากโจทย์ง่ายและค่อย ๆ เพิ่มระดับ'},
+      {id:'G3', title:'ไม่กล้าถาม', plan:'เริ่มจากถามครูหลังคาบหรือพิมพ์ถามแบบส่วนตัว'},
+      {id:'G4', title:'ไม่ทบทวน', plan:'ทบทวนหลังเรียนอย่างน้อย 10 นาที'},
+      {id:'G5', title:'ทำโจทย์น้อย', plan:'เริ่มจากทำโจทย์วันละ 3 ข้อ'},
+      {id:'G6', title:'ท้อเร็ว', plan:'แบ่งเป้าหมายให้เล็กลงและผ่านทีละด่าน'},
+      {id:'G7', title:'คิดว่าตัวเองไม่เก่งเลข', plan:'เปลี่ยนจาก “ฉันไม่เก่ง” เป็น “ฉันยังฝึกไม่พอ”'}
+    ];
+
+    const powers = [
+      'ฉันเป็นคนพยายาม แม้จะช้า','ฉันชอบช่วยเพื่อน','ฉันจำขั้นตอนได้ดี','ฉันกล้าลองทำเมื่อมีตัวอย่าง','ฉันชอบฟังคำอธิบาย','ฉันชอบจดและทำตามระบบ','ฉันอาจไม่เก่ง แต่ฉันไม่อยากยอมแพ้'
+    ];
+
+    const islamicValues = [
+      {title:'นิยัต', desc:'ตั้งเจตนาเรียนเพื่อพัฒนาตัวเอง และใช้ความรู้ให้เกิดประโยชน์'},
+      {title:'อิคลาศ', desc:'เรียนด้วยความจริงใจ ไม่ใช่ทำแค่ให้ครูเห็น'},
+      {title:'ซอบัร', desc:'อดทนเมื่อเจอโจทย์ยาก และไม่ยอมแพ้เร็วเกินไป'},
+      {title:'อิห์ซาน', desc:'ทำงานให้ดีที่สุด แม้ไม่มีใครเห็น'},
+      {title:'อิคติยาร', desc:'ลงมือพยายาม ฝึก ทำโจทย์ และทบทวน'},
+      {title:'ตะวักกุล', desc:'พยายามเต็มที่แล้วมอบหมายผลลัพธ์ต่ออัลลอฮ์'},
+      {title:'มุฮาซาบะฮ์', desc:'ทบทวนตัวเองว่าวันนี้พลาดตรงไหน และจะปรับอย่างไร'},
+      {title:'อะดับ', desc:'มีมารยาท ไม่ล้อเพื่อน ไม่ดูถูกเพื่อนเวลาตอบผิด'}
+    ];
+
+    const goalSamples = ['ทบทวนหลังเรียน 10 นาที','ทำโจทย์วันละ 3 ข้อ','ถามครูเมื่อไม่เข้าใจ','จดสรุปทุกคาบ','ไม่หลับในห้องเรียน','ส่งงานให้ครบ'];
+
+    let step = 0;
+    let qIndex = 0;
+    const screens = [...document.querySelectorAll('.screen')];
+    const progressBar = document.getElementById('progressBar');
+    const progressLabel = document.getElementById('progressLabel');
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const toast = document.getElementById('toast');
+
+    function initLogo(){
+      if(!LOGO_URL) return;
+      document.querySelectorAll('.logo-wrap img, .r-logo img').forEach(img=>{ img.src = LOGO_URL; img.style.display='block'; });
+      document.querySelectorAll('.logo-wrap span, .r-logo span').forEach(s=>s.style.display='none');
+    }
+
+    function el(tag, attrs={}, html=''){
+      const node = document.createElement(tag);
+      Object.entries(attrs).forEach(([k,v])=>{
+        if(k==='class') node.className = v;
+        else if(k==='dataset') Object.assign(node.dataset,v);
+        else node.setAttribute(k,v);
+      });
+      node.innerHTML = html;
+      return node;
+    }
+
+    function showToast(msg){
+      toast.textContent = msg; toast.classList.add('show');
+      clearTimeout(showToast.t); showToast.t = setTimeout(()=>toast.classList.remove('show'),2300);
+    }
+
+    function renderMission1(){
+      const wrap = document.getElementById('mission1'); wrap.innerHTML='';
+      questions.forEach((item,i)=>{
+        const card = el('div',{class:'question-card' + (i===qIndex?' active':'')});
+        card.innerHTML = `<span class="q-count">คำถามที่ ${i+1}/4</span><div class="question">${item.q}</div><div class="options"></div>`;
+        const opts = card.querySelector('.options');
+        Object.entries(item.opts).forEach(([letter,text])=>{
+          const selected = state.mission1Answers[i] === letter;
+          const opt = el('div',{class:'option' + (selected?' selected':''), role:'button'}, `<span class="letter">${letter}</span><span class="option-text"><b>${text}</b></span><span class="check">✓</span>`);
+          opt.onclick = () => {state.mission1Answers[i]=letter; showToast('บันทึกคำตอบแล้ว'); if(i<questions.length-1){ qIndex=i+1; renderMission1(); } else { renderMission1(); }};
+          opts.appendChild(opt);
+        });
+        wrap.appendChild(card);
+      });
+    }
+
+    function renderWalls(){
+      const wrap = document.getElementById('walls'); wrap.innerHTML='';
+      walls.forEach((w,idx)=>{
+        const selected = state.selectedWalls.includes(w.title);
+        const opt = el('div',{class:'option' + (selected?' selected':''), role:'button'}, `<span class="letter">${idx+1}</span><span class="option-text"><b>${w.title}</b><span>${w.plan}</span></span><span class="check">✓</span>`);
+        opt.onclick = () => toggleWall(w);
+        wrap.appendChild(opt);
+      });
+      document.getElementById('wallCount').textContent = `${state.selectedWalls.length}/2`;
+      const preview = document.getElementById('unlockPreview');
+      const list = document.getElementById('unlockList'); list.innerHTML='';
+      state.unlockPlans.forEach(plan=>list.appendChild(el('li',{},plan)));
+      preview.classList.toggle('show', state.unlockPlans.length>0);
+    }
+
+    function toggleWall(w){
+      const idx = state.selectedWalls.indexOf(w.title);
+      if(idx>=0){ state.selectedWalls.splice(idx,1); state.unlockPlans = state.selectedWalls.map(t=>walls.find(x=>x.title===t).plan); }
+      else{
+        if(state.selectedWalls.length>=2){ showToast('เลือกได้สูงสุด 2 ข้อ หากต้องการเปลี่ยน ให้แตะข้อที่เลือกไว้เพื่อยกเลิก'); return; }
+        state.selectedWalls.push(w.title); state.unlockPlans.push(w.plan);
+      }
+      renderWalls();
+    }
+
+    function renderPowers(){
+      const wrap = document.getElementById('powers'); wrap.innerHTML='';
+      powers.forEach((p,idx)=>{
+        const selected = state.selectedPowers.includes(p);
+        const opt = el('div',{class:'option power' + (selected?' selected':''), role:'button'}, `<span class="letter">P${idx+1}</span><span class="option-text"><b>${p}</b><span>${selected?'Power Selected':'แตะเพื่อเลือกพลังลับ'}</span></span><span class="check">★</span>`);
+        opt.onclick = () => togglePower(p);
+        wrap.appendChild(opt);
+      });
+      document.getElementById('powerCount').textContent = `${state.selectedPowers.length}/2`;
+    }
+
+    function togglePower(p){
+      const idx = state.selectedPowers.indexOf(p);
+      if(idx>=0) state.selectedPowers.splice(idx,1);
+      else{
+        if(state.selectedPowers.length>=2){ showToast('เลือกพลังลับได้สูงสุด 2 ข้อ'); return; }
+        state.selectedPowers.push(p);
+      }
+      renderPowers();
+    }
+
+    function renderIslamic(){
+      const wrap = document.getElementById('islamic'); wrap.innerHTML='';
+      islamicValues.forEach((v,idx)=>{
+        const selected = state.selectedIslamicValue && state.selectedIslamicValue.title === v.title;
+        const opt = el('div',{class:'option islam' + (selected?' selected':''), role:'button'}, `<span class="letter">${idx+1}</span><span class="option-text"><b>${v.title}</b><span>${v.desc}</span></span><span class="check">✓</span>`);
+        opt.onclick = () => { state.selectedIslamicValue = v; renderIslamic(); showToast('เลือกหลักอิสลามนำทางแล้ว'); };
+        wrap.appendChild(opt);
+      });
+    }
+
+    function renderGoalChips(){
+      const wrap = document.getElementById('goalChips'); wrap.innerHTML='';
+      goalSamples.forEach(g=>{
+        const chip = el('button',{class:'goal-chip', type:'button'},g);
+        chip.onclick = () => { document.getElementById('weeklyGoal').value = `ฉันจะ${g}`; state.weeklyGoal = document.getElementById('weeklyGoal').value; };
+        wrap.appendChild(chip);
+      });
+    }
+
+    function updateNav(){
+      screens.forEach((s,i)=>s.classList.toggle('active',i===step));
+      progressBar.style.width = `${((step+1)/8)*100}%`;
+      progressLabel.textContent = `${step+1}/8`;
+      backBtn.style.display = step===0 ? 'none' : 'inline-flex';
+      const labels = ['เริ่มถอดรหัส','เริ่ม Mission','ถัดไป','ถัดไป','ถัดไป','ถัดไป','ถอดรหัสของฉัน','สร้างการ์ดผลลัพธ์'];
+      nextBtn.textContent = labels[step];
+      nextBtn.classList.toggle('pulse', step===0 || step===7);
+      if(step===2) renderMission1();
+    }
+
+    function collectInfo(){
+      state.studentId = document.getElementById('studentId').value.trim();
+      state.fullName = document.getElementById('fullName').value.trim();
+      state.className = document.getElementById('className').value.trim();
+      state.studentNumber = document.getElementById('studentNumber').value.trim();
+      state.weeklyGoal = document.getElementById('weeklyGoal').value.trim();
+    }
+
+    function validateStep(){
+      collectInfo();
+      if(step===1){
+        const fields = ['studentId','fullName','className','studentNumber'].map(id=>document.getElementById(id));
+        let ok = true;
+        fields.forEach(f=>{ f.classList.toggle('invalid', !f.value.trim()); if(!f.value.trim()) ok=false; });
+        if(!ok) showToast('กรุณากรอกข้อมูลให้ครบก่อนเริ่ม Mission');
+        return ok;
+      }
+      if(step===2){
+        const missing = questions.findIndex((_,i)=>!state.mission1Answers[i]);
+        if(missing>=0){ qIndex = missing; renderMission1(); showToast(`กรุณาตอบคำถามที่ ${missing+1} ก่อน`); return false; }
+      }
+      if(step===3 && state.selectedWalls.length!==2){ showToast('กรุณาเลือกกำแพงของคุณให้ครบ 2 ข้อ'); return false; }
+      if(step===4 && state.selectedPowers.length<1){ showToast('กรุณาเลือกพลังลับของคุณอย่างน้อย 1 ข้อ'); return false; }
+      if(step===5 && !state.selectedIslamicValue){ showToast('กรุณาเลือกหลักอิสลามที่อยากใช้เป็นหลักประจำใจ'); return false; }
+      if(step===6){
+        const goal = document.getElementById('weeklyGoal');
+        goal.classList.toggle('invalid', goal.value.trim().length < 10);
+        if(goal.value.trim().length < 10){ showToast('ลองเขียนเป้าหมายให้ชัดขึ้นอีกนิด เพื่อให้คุณทำตามได้จริง'); return false; }
+      }
+      return true;
+    }
+
+    function computeLearner(){
+      const count = {A:0,B:0,C:0,D:0};
+      state.mission1Answers.forEach(a=>count[a]++);
+      const max = Math.max(...Object.values(count));
+      const winners = Object.keys(count).filter(k=>count[k]===max);
+      if(winners.length===1){
+        const m = learnerMap[winners[0]];
+        state.learnerCode = m.code;
+        state.learnerCodeName = `${m.code} = ${m.name}`;
+        state.learnerDescription = m.desc;
+      } else {
+        const codes = winners.map(k=>learnerMap[k].code);
+        state.learnerCode = codes.join(' + ');
+        state.learnerCodeName = `${codes.join(' + ')} Learner`;
+        state.learnerDescription = 'คุณมีลักษณะผู้เรียนมากกว่าหนึ่งแบบ นี่คือข้อดี เพราะคุณสามารถพัฒนาตัวเองได้หลายทาง ทั้งการปรับใจ การฝึก การใช้ระบบ และการขอความช่วยเหลืออย่างเหมาะสม';
+      }
+      state.createdAt = new Date().toLocaleString('th-TH');
+    }
+
+    function resultHTML(){
+      const iv = state.selectedIslamicValue || {title:'-',desc:'-'};
+      return `
+        <div class="r-head">
+          <div class="r-logo"><img class="r-logo-img" alt="โลโก้โรงเรียน"><span>AFS</span></div>
+          <div class="unlock">🏆 UNLOCK COMPLETE</div>
+          <div class="r-title">MathEasy2 Code Card</div>
+          <div class="r-sub">ถอดรหัสใจ ปลดล็อกคณิต</div>
+        </div>
+        <div class="r-box"><h4>ข้อมูลนักเรียน</h4><div class="student-line"><span>รหัส: ${escapeHTML(state.studentId)}</span><span>เลขที่: ${escapeHTML(state.studentNumber)}</span><span style="grid-column:1/-1">ชื่อ: ${escapeHTML(state.fullName)}</span><span>ชั้น: ${escapeHTML(state.className)}</span><span>สร้างเมื่อ: ${escapeHTML(state.createdAt)}</span></div></div>
+        <div class="r-box"><h4>รหัสผู้เรียนของฉัน</h4><div class="code-big">${escapeHTML(state.learnerCodeName)}</div><p>${escapeHTML(state.learnerDescription)}</p></div>
+        <div class="r-box"><h4>กำแพงของฉัน</h4><ul>${state.selectedWalls.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ul></div>
+        <div class="r-box"><h4>แผนปลดล็อก</h4><ul>${state.unlockPlans.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ul></div>
+        <div class="r-box"><h4>พลังลับของฉัน</h4><ul>${state.selectedPowers.map(x=>`<li>${escapeHTML(x)}</li>`).join('')}</ul></div>
+        <div class="r-box"><h4>หลักอิสลามนำทาง</h4><p><b>${escapeHTML(iv.title)}</b><br>${escapeHTML(iv.desc)}</p></div>
+        <div class="r-box"><h4>เป้าหมายสัปดาห์นี้</h4><p>“${escapeHTML(state.weeklyGoal)}”</p></div>
+        <div class="r-footer">เริ่มได้ ฝึกได้ พลาดได้ แต่ห้ามยอมแพ้<br>Welcome to MathEasy2<br>คณิตศาสตร์พื้นฐาน ค33101 | A-Level Mathematics 2</div>
+      `;
+    }
+
+    function escapeHTML(str){ return String(str||'').replace(/[&<>"]/g, s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s])); }
+
+    function showResult(){
+      computeLearner();
+      document.getElementById('resultCard').innerHTML = resultHTML();
+      if(LOGO_URL){
+        document.querySelectorAll('.r-logo img').forEach(img=>{img.src=LOGO_URL; img.style.display='block';});
+        document.querySelectorAll('.r-logo span').forEach(s=>s.style.display='none');
+      }
+      document.getElementById('resultModal').classList.add('show');
+      burstConfetti();
+    }
+
+    function burstConfetti(){
+      const c = document.getElementById('confetti'); c.innerHTML='';
+      const colors = ['#FBBF24','#F9A8D4','#16A34A','#FFFFFF','#60A5FA'];
+      for(let i=0;i<46;i++){
+        const piece = document.createElement('i');
+        piece.style.left = Math.random()*100+'%';
+        piece.style.background = colors[i%colors.length];
+        piece.style.animationDelay = Math.random()*0.5+'s';
+        piece.style.transform = `rotate(${Math.random()*180}deg)`;
+        c.appendChild(piece);
+      }
+      setTimeout(()=>c.innerHTML='',2200);
+    }
+
+    function next(){
+      if(!validateStep()) return;
+      if(step < 7){ step++; updateNav(); return; }
+      const loading = document.getElementById('loading');
+      const loadingText = document.getElementById('loadingText');
+      const lines = ['กำลังรวม EXP ความพยายาม...','Unlocking Your Math Code...','กำลังสร้างการ์ดผลลัพธ์...'];
+      let i=0; loading.classList.add('show'); loadingText.textContent = lines[0];
+      const timer = setInterval(()=>{ i=(i+1)%lines.length; loadingText.textContent=lines[i]; },650);
+      setTimeout(()=>{ clearInterval(timer); loading.classList.remove('show'); showResult(); },1800);
+    }
+
+    function back(){
+      if(step===2 && qIndex>0){ qIndex--; renderMission1(); return; }
+      if(step>0){ step--; updateNav(); }
+    }
+
+    function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight){
+      const words = String(text).split(' ');
+      let line = '', lines=[];
+      words.forEach(word=>{
+        const test = line ? line + ' ' + word : word;
+        if(ctx.measureText(test).width > maxWidth && line){ lines.push(line); line = word; }
+        else line = test;
+      });
+      lines.push(line);
+      lines.forEach(l=>{ ctx.fillText(l,x,y); y+=lineHeight; });
+      return y;
+    }
+
+    function roundRect(ctx,x,y,w,h,r,fill,stroke){
+      ctx.beginPath();
+      ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+      if(fill) ctx.fill(); if(stroke) ctx.stroke();
+    }
+
+    function downloadPNG(){
+      computeLearner();
+      const canvas = document.createElement('canvas');
+      const W=1080,H=1920; canvas.width=W; canvas.height=H;
+      const ctx = canvas.getContext('2d');
+      const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#062018'); g.addColorStop(.52,'#0F5F3A'); g.addColorStop(1,'#071812'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='rgba(249,168,212,.26)'; ctx.beginPath(); ctx.arc(140,120,240,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(251,191,36,.22)'; ctx.beginPath(); ctx.arc(920,120,220,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.07)'; ctx.font='900 72px system-ui'; ctx.fillText('∑  π  √  x²',560,260);
+
+      ctx.textAlign='center';
+      ctx.fillStyle='#FFFFFF'; ctx.beginPath(); ctx.arc(W/2,116,62,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#0F5F3A'; ctx.font='900 42px system-ui'; ctx.fillText('AFS',W/2,132);
+      ctx.fillStyle='#FBBF24'; roundRect(ctx,W/2-168,198,336,52,26,true,false);
+      ctx.fillStyle='#111827'; ctx.font='900 24px system-ui'; ctx.fillText('UNLOCK COMPLETE',W/2,232);
+      ctx.fillStyle='#fff'; ctx.font='900 58px system-ui'; ctx.fillText('MathEasy2 Code Card',W/2,306);
+      ctx.font='700 32px system-ui'; ctx.fillStyle='rgba(255,255,255,.86)'; ctx.fillText('ถอดรหัสใจ ปลดล็อกคณิต',W/2,354);
+
+      let y=410; const x=70, w=940;
+      function box(title, lines, minH=0){
+        ctx.textAlign='left'; ctx.font='900 30px system-ui';
+        const startY=y; const pad=28; let ty=y+pad+30;
+        ctx.fillStyle='rgba(255,255,255,.13)'; ctx.strokeStyle='rgba(255,255,255,.20)'; ctx.lineWidth=2;
+        roundRect(ctx,x,y,w,Math.max(minH,110+lines.length*38),34,true,true);
+        ctx.fillStyle='#FDE68A'; ctx.fillText(title,x+pad,ty); ty+=44;
+        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='500 27px system-ui';
+        lines.forEach(line=>{ ty = wrapCanvasText(ctx,line,x+pad,ty,w-pad*2,36)+10; });
+        const h = Math.max(minH, ty-startY+22);
+        ctx.clearRect(x-3,y-3,w+6,h+6);
+        ctx.fillStyle='rgba(255,255,255,.13)'; ctx.strokeStyle='rgba(255,255,255,.20)';
+        roundRect(ctx,x,y,w,h,34,true,true);
+        ty=y+pad+30; ctx.fillStyle='#FDE68A'; ctx.font='900 30px system-ui'; ctx.fillText(title,x+pad,ty); ty+=44;
+        ctx.fillStyle='rgba(255,255,255,.92)'; ctx.font='500 27px system-ui';
+        lines.forEach(line=>{ ty = wrapCanvasText(ctx,line,x+pad,ty,w-pad*2,36)+10; });
+        y += h+20;
+      }
+      box('ข้อมูลนักเรียน',[`รหัส: ${state.studentId}   ชั้น: ${state.className}   เลขที่: ${state.studentNumber}`,`ชื่อ: ${state.fullName}`]);
+      box('รหัสผู้เรียนของฉัน',[state.learnerCodeName,state.learnerDescription]);
+      box('กำแพงของฉัน',state.selectedWalls.map((v,i)=>`${i+1}. ${v}`));
+      box('แผนปลดล็อก',state.unlockPlans.map((v,i)=>`${i+1}. ${v}`));
+      box('พลังลับของฉัน',state.selectedPowers.map((v,i)=>`${i+1}. ${v}`));
+      box('หลักอิสลามนำทาง',[`${state.selectedIslamicValue.title}: ${state.selectedIslamicValue.desc}`]);
+      box('เป้าหมายสัปดาห์นี้',[`“${state.weeklyGoal}”`]);
+      ctx.textAlign='center'; ctx.fillStyle='rgba(255,255,255,.82)'; ctx.font='700 27px system-ui';
+      ctx.fillText('เริ่มได้ ฝึกได้ พลาดได้ แต่ห้ามยอมแพ้',W/2,1810);
+      ctx.font='600 22px system-ui'; ctx.fillText('คณิตศาสตร์พื้นฐาน ค33101 | A-Level Mathematics 2',W/2,1850);
+      const a=document.createElement('a'); a.download=`MathEasy2_Code_${state.studentId || 'card'}.png`; a.href=canvas.toDataURL('image/png'); a.click();
+    }
+
+    document.getElementById('weeklyGoal').addEventListener('input', e=>state.weeklyGoal=e.target.value.trim());
+    ['studentId','fullName','className','studentNumber'].forEach(id=>document.getElementById(id).addEventListener('input',e=>e.target.classList.remove('invalid')));
+    nextBtn.onclick = next; backBtn.onclick = back;
+    document.getElementById('closeBtn').onclick = ()=>document.getElementById('resultModal').classList.remove('show');
+    document.getElementById('editBtn').onclick = ()=>{document.getElementById('resultModal').classList.remove('show'); step=6; updateNav();};
+    document.getElementById('saveBtn').onclick = downloadPNG;
+
+    initLogo(); renderMission1(); renderWalls(); renderPowers(); renderIslamic(); renderGoalChips(); updateNav();
+  </script>
+</body>
+</html>
